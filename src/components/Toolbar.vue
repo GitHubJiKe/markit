@@ -9,20 +9,20 @@
             class="title-input"
             placeholder="标题"
         />
-        <div class="toolbar-actions" v-if="editMode">
+        <div class="toolbar-actions" v-if="viewMode === 'edit'">
             <button
                 @click="$emit('togglePreview')"
-                :class="{ active: isPreviewMode }"
+                :class="{ active: viewMode === 'preview' }"
                 :title="shortcutHints.togglePreview"
             >
-                {{ isPreviewMode ? "编辑" : "预览" }}
+                {{ viewMode === "preview" ? "编辑" : "预览" }}
             </button>
             <button
                 @click="$emit('exportImage')"
-                :disabled="!isPreviewMode"
-                :class="{ disabled: !isPreviewMode }"
+                :disabled="viewMode !== 'preview'"
+                :class="{ disabled: viewMode !== 'preview' }"
                 :title="
-                    isPreviewMode
+                    viewMode === 'preview'
                         ? shortcutHints.exportImagePreview
                         : shortcutHints.exportImageEdit
                 "
@@ -138,8 +138,7 @@ const shortcutHints = computed(() => ({
 
 defineProps<{
     title: string;
-    isPreviewMode: boolean;
-    editMode: boolean;
+    viewMode: "edit" | "preview";
 }>();
 
 defineEmits<ToolbarEvents>();

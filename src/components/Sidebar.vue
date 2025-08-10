@@ -7,7 +7,7 @@
             <h2>Markit</h2>
             <div class="sidebar-actions">
                 <button
-                    v-if="editMode"
+                    v-if="viewMode === 'edit'"
                     @click="$emit('createFile')"
                     :title="shortcutHints.createFile"
                 >
@@ -32,7 +32,7 @@
                 <div class="file-info">
                     <span class="file-name">{{ file.title || file.name }}</span>
                     <span
-                        v-if="editMode"
+                        v-if="viewMode === 'edit'"
                         class="file-status"
                         :class="{
                             github: file.isPushedToGitHub,
@@ -48,7 +48,7 @@
                     </span>
                 </div>
                 <button
-                    v-if="editMode"
+                    v-if="viewMode === 'edit'"
                     class="delete-btn"
                     @click.stop="$emit('deleteFile', index)"
                 >
@@ -56,7 +56,7 @@
                 </button>
             </div>
         </div>
-        <div class="sidebar-footer" v-if="editMode">
+        <div class="sidebar-footer" v-if="viewMode === 'edit'">
             <button
                 class="settings-btn"
                 @click="$emit('openSettings')"
@@ -91,7 +91,7 @@ defineProps<{
     visible: boolean;
     files: FileItem[];
     currentFileIndex: number;
-    editMode: boolean;
+    viewMode: "edit" | "preview";
 }>();
 
 defineEmits<SidebarEvents>();

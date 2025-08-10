@@ -5,7 +5,7 @@
             :visible="sidebarVisible"
             :files="files"
             :current-file-index="currentFileIndex"
-            :edit-mode="editMode"
+            :view-mode="viewMode"
             @create-file="createNewFile"
             @toggle-sidebar="toggleSidebar"
             @select-file="switchToFile"
@@ -17,9 +17,8 @@
         <div class="main-content">
             <!-- 顶部工具栏 -->
             <Toolbar
-                :edit-mode="editMode"
+                :view-mode="viewMode"
                 :title="currentFile.title"
-                :is-preview-mode="isPreviewMode"
                 @update-title="updateTitle"
                 @save-file="saveCurrentFile"
                 @toggle-preview="togglePreview"
@@ -35,7 +34,7 @@
             <div class="content-area">
                 <!-- 编辑器 -->
                 <Editor
-                    v-if="!isPreviewMode"
+                    v-if="viewMode === 'edit'"
                     ref="editorRef"
                     :content="currentFile.content"
                     :auto-focus="false"
@@ -44,7 +43,10 @@
                 />
 
                 <!-- 预览区域 -->
-                <Preview v-else :content="currentFile.content" />
+                <Preview
+                    v-else-if="viewMode === 'preview'"
+                    :content="currentFile.content"
+                />
             </div>
 
             <!-- 状态栏 -->
@@ -93,6 +95,11 @@ import {
     previewStyleStorage,
 } from "./utils/storage";
 import {
+    getURLParams,
+    updateURLParams,
+    watchURLChanges,
+} from "./utils/urlParams";
+import {
     isLoading,
     loadingMessage,
     loadingType,
@@ -112,7 +119,7 @@ import Loading from "./components/Loading.vue";
 
 // 响应式数据
 const sidebarVisible = ref(true);
-const isPreviewMode = ref(false);
+const viewMode = ref<"edit" | "preview">("edit");
 const isDarkTheme = ref(false);
 const showSettings = ref(false);
 const selectedTheme = ref("github");
@@ -133,7 +140,6 @@ const files = ref<FileItem[]>([
 
 const currentFileIndex = ref(0);
 const editorRef = ref<InstanceType<typeof Editor>>();
-const editMode = ref(false);
 
 // 提供主题状态给子组件
 provide("isDarkTheme", isDarkTheme);
@@ -157,39 +163,58 @@ const currentFile = computed(
 const saveAppState = () => {
     const appState: AppState = {
         currentFileIndex: currentFileIndex.value,
-        isPreviewMode: isPreviewMode.value,
+        viewMode: viewMode.value,
         sidebarVisible: sidebarVisible.value,
-        editMode: editMode.value,
     };
     appStateStorage.save(appState);
+
+    // 同步更新URL参数
+    updateURLParams({
+        viewMode: viewMode.value,
+    });
 };
 
 const loadAppState = () => {
+    // 首先加载URL参数
+    const urlParams = getURLParams();
+
+    // 加载本地缓存的状态
     const savedState = appStateStorage.load();
-    if (savedState.currentFileIndex !== undefined) {
+
+    // 根据URL参数更新状态（URL参数优先级更高）
+    const urlUpdates = appStateStorage.updateFromURL(urlParams);
+
+    // 合并状态：URL参数 > 本地缓存 > 默认值
+    const finalState = { ...savedState, ...urlUpdates };
+    console.log("finalState", finalState);
+    // 应用最终状态
+    if (finalState.currentFileIndex !== undefined) {
         // 安全检查：确保文件索引在有效范围内
         if (
-            savedState.currentFileIndex >= 0 &&
-            savedState.currentFileIndex < files.value.length
+            finalState.currentFileIndex >= 0 &&
+            finalState.currentFileIndex < files.value.length
         ) {
-            currentFileIndex.value = savedState.currentFileIndex;
+            currentFileIndex.value = finalState.currentFileIndex;
         }
     }
-    if (savedState.isPreviewMode !== undefined) {
-        isPreviewMode.value = savedState.isPreviewMode;
+    if (finalState.viewMode !== undefined) {
+        viewMode.value = finalState.viewMode;
     }
-    if (savedState.sidebarVisible !== undefined) {
-        sidebarVisible.value = savedState.sidebarVisible;
-    }
-    if (savedState.editMode !== undefined) {
-        editMode.value = savedState.editMode;
+    if (finalState.sidebarVisible !== undefined) {
+        sidebarVisible.value = finalState.sidebarVisible;
     }
 };
 
 // 监听状态变化并自动保存
 watch(
-    [currentFileIndex, isPreviewMode, sidebarVisible, editMode],
+    [currentFileIndex, viewMode, sidebarVisible],
     () => {
+        console.log(
+            222222,
+            currentFileIndex.value,
+            viewMode.value,
+            sidebarVisible.value,
+        );
         saveAppState();
     },
     { deep: true },
@@ -198,10 +223,12 @@ watch(
 // 方法
 const toggleSidebar = () => {
     sidebarVisible.value = !sidebarVisible.value;
+    // URL参数会自动通过watch更新
 };
 
 const togglePreview = () => {
-    isPreviewMode.value = !isPreviewMode.value;
+    viewMode.value = viewMode.value === "edit" ? "preview" : "edit";
+    // URL参数会自动通过watch更新
 };
 
 const toggleTheme = () => {
@@ -217,6 +244,9 @@ const changePreviewStyle = (styleId: string) => {
 
     // 保存到本地存储
     previewStyleStorage.save(styleId);
+
+    // 同步更新URL参数
+    updateURLParams({ previewStyle: styleId });
 };
 
 const createNewFile = () => {
@@ -269,6 +299,7 @@ const deleteFile = (index: number) => {
 const switchToFile = (index: number) => {
     saveCurrentFile();
     currentFileIndex.value = index;
+    // URL参数会自动通过watch更新
 };
 
 const updateTitle = (title: string) => {
@@ -316,7 +347,7 @@ const saveToLocal = () => {
 };
 
 const exportToImage = async () => {
-    if (!isPreviewMode.value) {
+    if (viewMode.value !== "preview") {
         return; // 非预览模式不执行导出
     }
 
@@ -555,6 +586,9 @@ const setupShortcuts = () => {
                     // 保存到本地存储
                     previewStyleStorage.save(nextStyle.id);
 
+                    // 同步更新URL参数
+                    updateURLParams({ previewStyle: nextStyle.id });
+
                     // 更新Toolbar组件的状态
                     // 这里需要通过事件通知Toolbar组件更新
                 },
@@ -570,18 +604,22 @@ const setupShortcuts = () => {
 
     // 创建并绑定快捷键管理器
     shortcutManager = createShortcutManager(actions);
-    shortcutManager.bindAll(!editMode.value);
+    shortcutManager.bindAll(viewMode.value === "edit");
 };
 
-// 从url获取参数，是否是编辑态
+// 从url获取参数，设置视图模式
 
-const setEditMode = () => {
-    editMode.value = location.search.includes("editmode=true");
+const setViewMode = () => {
+    if (location.search.includes("viewmode=preview")) {
+        viewMode.value = "preview";
+    } else {
+        viewMode.value = "edit";
+    }
 };
 
 // 生命周期
 onMounted(() => {
-    setEditMode();
+    setViewMode();
 
     // 加载保存的文件
     const savedFiles = fileStorage.load();
@@ -593,8 +631,8 @@ onMounted(() => {
     loadAppState();
 
     // 如果没有缓存状态，使用默认值
-    if (!editMode.value) {
-        togglePreview();
+    if (viewMode.value === "edit") {
+        // 默认编辑模式
     }
 
     // 加载设置
@@ -628,6 +666,30 @@ onMounted(() => {
 
     // 设置快捷键
     setupShortcuts();
+
+    // 监听URL变化
+    watchURLChanges((urlParams) => {
+        // 当URL参数变化时，更新应用状态并缓存
+        const urlUpdates = appStateStorage.updateFromURL(urlParams);
+        // 应用URL参数更新
+        if (urlUpdates.viewMode !== undefined) {
+            viewMode.value = urlUpdates.viewMode;
+        }
+        if (urlUpdates.sidebarVisible !== undefined) {
+            sidebarVisible.value = urlUpdates.sidebarVisible;
+        }
+        if (
+            urlUpdates.currentFileIndex !== undefined &&
+            urlUpdates.currentFileIndex >= 0 &&
+            urlUpdates.currentFileIndex < files.value.length
+        ) {
+            currentFileIndex.value = urlUpdates.currentFileIndex;
+        }
+
+        // 保存更新后的状态到缓存
+        console.log(111111);
+        saveAppState();
+    });
 });
 
 onUnmounted(() => {

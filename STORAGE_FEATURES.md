@@ -2,7 +2,7 @@
 
 ## 概述
 
-Markit 现在支持完整的本地缓存功能，确保用户在刷新页面后能够恢复到之前的工作状态。
+Markit 现在支持完整的本地缓存功能，确保用户在刷新页面后能够恢复到之前的工作状态。同时支持 URL 参数同步，用户可以通过修改 URL 来动态调整应用状态。
 
 ## 缓存内容
 
@@ -29,6 +29,23 @@ Markit 现在支持完整的本地缓存功能，确保用户在刷新页面后�
 ### 存储工具 (`src/utils/storage.ts`)
 
 提供了统一的存储管理接口：
+
+### URL 参数管理 (`src/utils/urlParams.ts`)
+
+提供了 URL 参数解析、更新和监听功能：
+
+```typescript
+// 获取URL参数
+const params = getURLParams();
+
+// 更新URL参数
+updateURLParams({ editMode: true, fileIndex: 2 });
+
+// 监听URL变化
+watchURLChanges((params) => {
+    // 处理URL参数变化
+});
+```
 
 ```typescript
 // 文件存储
@@ -57,6 +74,7 @@ previewStyleStorage.load();
 -   使用 Vue 3 的 `watch` API 监听状态变化
 -   状态变化时自动保存到 localStorage
 -   页面加载时自动恢复所有缓存状态
+-   URL 参数变化时自动更新应用状态并缓存
 
 ### 安全检查
 
@@ -69,6 +87,18 @@ previewStyleStorage.load();
 ### 自动缓存
 
 所有状态变化都会自动缓存，无需手动操作。
+
+### URL 参数同步
+
+支持通过 URL 参数动态调整应用状态：
+
+-   `?editmode=true` - 启用编辑模式
+-   `?previewstyle=minimal` - 设置预览样式为 minimal
+-   `?file=2` - 切换到第 3 个文档（索引从 0 开始）
+-   `?mode=preview` - 切换到预览模式
+-   `?sidebar=true` - 显示侧边栏
+
+URL 参数优先级高于本地缓存，确保用户可以通过修改 URL 来覆盖缓存状态。
 
 ### 手动清理缓存
 
@@ -100,3 +130,5 @@ clearAllStorage();
 -   重构存储逻辑，提高代码可维护性
 -   增强错误处理和向后兼容性
 -   优化状态恢复逻辑
+-   新增 URL 参数同步功能
+-   支持通过 URL 动态调整应用状态

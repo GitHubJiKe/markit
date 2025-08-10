@@ -1,4 +1,5 @@
 import type { FileItem, AppState, Settings } from "../types";
+import type { URLParams } from "./urlParams";
 
 // 存储键名常量
 const STORAGE_KEYS = {
@@ -57,6 +58,17 @@ export const appStateStorage = {
             console.error("加载应用状态失败:", error);
         }
         return {};
+    },
+
+    // 根据URL参数更新状态
+    updateFromURL: (urlParams: URLParams): Partial<AppState> => {
+        const updates: Partial<AppState> = {};
+
+        if (urlParams.viewMode !== undefined) {
+            updates.viewMode = urlParams.viewMode;
+        }
+
+        return updates;
     },
 };
 

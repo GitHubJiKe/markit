@@ -15,12 +15,14 @@ export interface Settings {
     githubRepo: string;
 }
 
+// 视图模式类型
+export type ViewMode = "edit" | "preview";
+
 // 应用状态类型定义
 export interface AppState {
     currentFileIndex: number;
-    isPreviewMode: boolean;
+    viewMode: ViewMode;
     sidebarVisible: boolean;
-    editMode: boolean;
 }
 
 // 事件类型定义
