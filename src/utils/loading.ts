@@ -1,4 +1,4 @@
-import { ref, type Ref } from "vue";
+import { ref } from "vue";
 
 // 全局loading状态
 const isLoading = ref(false);

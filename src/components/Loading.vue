@@ -18,7 +18,7 @@
                         ></div>
                     </div>
                     <div class="progress-text">
-                        {{ Math.round(loadingProgress) }}%
+                        {{ Math.round(loadingProgress || 0) }}%
                     </div>
                 </div>
                 <div class="loading-text">{{ message }}</div>
@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import { inject, type Ref } from "vue";
+import { inject, ref, type Ref } from "vue";
 
 // 注入主题状态
-const isDarkTheme = inject("isDarkTheme", false) as Ref<boolean>;
+const isDarkTheme = inject("isDarkTheme", ref(false)) as Ref<boolean>;
 
 defineProps<{
     visible: boolean;
