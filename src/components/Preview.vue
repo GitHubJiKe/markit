@@ -206,13 +206,16 @@ const renderedMarkdown = computed(() => {
     codeBlocks.forEach((block) => {
         hljs.highlightElement(block as HTMLElement);
     });
-
+    const whitePng =
+        "https://raw.githubusercontent.com/GitHubJiKe/markit/refs/heads/main/public/favicon_white.png";
+    const blackPng =
+        "https://raw.githubusercontent.com/GitHubJiKe/markit/refs/heads/main/public/favicon_black.png";
     return (
         `<div style="flex:1">${tempDiv.innerHTML}</div>` +
         `<div class="brand-footer">
-            <img src="/favicon_${
-                isDarkTheme.value ? "white" : "black"
-            }.png" alt="Markit" class="brand-icon" />
+            <img src="${
+                isDarkTheme.value ? whitePng : blackPng
+            }" alt="Markit" class="brand-icon" />
             <span class="brand-name">Markit</span>
         </div>`
     );

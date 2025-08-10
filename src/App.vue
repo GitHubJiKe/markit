@@ -687,7 +687,6 @@ onMounted(() => {
         }
 
         // 保存更新后的状态到缓存
-        console.log(111111);
         saveAppState();
     });
 });
