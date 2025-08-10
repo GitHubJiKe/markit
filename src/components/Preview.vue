@@ -320,6 +320,7 @@ watch(() => props.content, watchContent, { immediate: true });
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    color: #333;
 }
 
 .preview-content.dark-theme {
