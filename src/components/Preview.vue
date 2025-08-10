@@ -209,7 +209,7 @@ const renderedMarkdown = computed(() => {
     });
 
     return (
-        `<div>${tempDiv.innerHTML}</div>` +
+        `<div style="flex:1">${tempDiv.innerHTML}</div>` +
         `<div class="brand-footer">
             <img src="/favicon.png" alt="Markit" class="brand-icon" />
             <span class="brand-name">Markit</span>
