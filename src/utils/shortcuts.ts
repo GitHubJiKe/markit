@@ -15,6 +15,7 @@ export interface ShortcutActions {
     pullFromGitHub: () => void;
     changePreviewStyle: () => void; // 添加这个动作
     scrollToTop: () => void; // 添加这个动作
+    exportPicture: () => void; // 添加这个动作
 }
 
 // 快捷键配置
@@ -32,6 +33,7 @@ export const SHORTCUT_KEYS = {
     PULL_FROM_GITHUB: "cmd+option+o,ctrl+alt+o",
     CHANGE_PREVIEW_STYLE: "cmd+shift+l,ctrl+shift+l",
     SCROLL_TO_TOP: "cmd+shift+option+t,ctrl+shift+option+t",
+    EXPORT_PICTURE: "cmd+shift+i,ctrl+shift+i",
 } as const;
 
 // 快捷键描述
@@ -49,6 +51,7 @@ export const SHORTCUT_DESCRIPTIONS = {
     [SHORTCUT_KEYS.PULL_FROM_GITHUB]: "从GitHub拉取",
     [SHORTCUT_KEYS.CHANGE_PREVIEW_STYLE]: "切换预览风格",
     [SHORTCUT_KEYS.SCROLL_TO_TOP]: "滚到顶部",
+    [SHORTCUT_KEYS.EXPORT_PICTURE]: "导出图片",
 } as const;
 
 // 快捷键管理类
@@ -79,6 +82,11 @@ export class ShortcutManager {
         this.bindShortcut(
             SHORTCUT_KEYS.PREV_FILE,
             this.actions.switchToPrevFile,
+        );
+        console.log(111111, this.actions.exportPicture);
+        this.bindShortcut(
+            SHORTCUT_KEYS.EXPORT_PICTURE,
+            this.actions.exportPicture,
         );
         if (disabled) {
             return;

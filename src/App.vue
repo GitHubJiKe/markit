@@ -209,12 +209,6 @@ const loadAppState = () => {
 watch(
     [currentFileIndex, viewMode, sidebarVisible],
     () => {
-        console.log(
-            222222,
-            currentFileIndex.value,
-            viewMode.value,
-            sidebarVisible.value,
-        );
         saveAppState();
     },
     { deep: true },
@@ -537,6 +531,18 @@ const pullFromGitHub = async () => {
     }
 };
 
+const exportPicture = () => {
+    console.log(22222);
+    if (viewMode.value === "preview") {
+        exportToImage();
+    } else {
+        togglePreview();
+        setTimeout(() => {
+            exportToImage();
+        }, 400);
+    }
+};
+
 // 快捷键设置
 const setupShortcuts = () => {
     // 定义快捷键动作
@@ -565,6 +571,7 @@ const setupShortcuts = () => {
         },
         pushToGitHub,
         pullFromGitHub,
+        exportPicture,
         changePreviewStyle: () => {
             // 实现快捷键切换预览风格的逻辑
             // 这里可以循环切换可用的预览风格
