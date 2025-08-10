@@ -227,7 +227,6 @@ const toggleSidebar = () => {
 };
 
 const togglePreview = () => {
-    alert(11);
     viewMode.value = viewMode.value === "edit" ? "preview" : "edit";
     // URL参数会自动通过watch更新
 };
