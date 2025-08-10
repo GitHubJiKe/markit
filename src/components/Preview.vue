@@ -209,8 +209,8 @@ const renderedMarkdown = computed(() => {
     });
 
     return (
-        tempDiv.innerHTML +
-        `  <div class="brand-footer">
+        `<div>${tempDiv.innerHTML}</div>` +
+        `<div class="brand-footer">
             <img src="/favicon.png" alt="Markit" class="brand-icon" />
             <span class="brand-name">Markit</span>
         </div>`
@@ -313,6 +313,9 @@ watch(() => props.content, watchContent, { immediate: true });
     margin: 0 auto;
     background: #fff;
     min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .preview-content.dark-theme {
