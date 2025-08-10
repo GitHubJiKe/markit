@@ -75,8 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, provide } from "vue";
-import type { FileItem } from "./types";
+import { ref, computed, onMounted, onUnmounted, provide, watch } from "vue";
+import type { FileItem, AppState } from "./types";
 import { snapdom } from "@zumer/snapdom";
 import { createShortcutManager, type ShortcutActions } from "./utils/shortcuts";
 import {
@@ -85,6 +85,13 @@ import {
     generateCommitMessage,
 } from "./utils/github";
 import { generateTimestampFileName } from "./utils";
+import {
+    fileStorage,
+    appStateStorage,
+    settingsStorage,
+    themeStorage,
+    previewStyleStorage,
+} from "./utils/storage";
 import {
     isLoading,
     loadingMessage,
@@ -146,6 +153,48 @@ const currentFile = computed(
         },
 );
 
+// 状态缓存方法
+const saveAppState = () => {
+    const appState: AppState = {
+        currentFileIndex: currentFileIndex.value,
+        isPreviewMode: isPreviewMode.value,
+        sidebarVisible: sidebarVisible.value,
+        editMode: editMode.value,
+    };
+    appStateStorage.save(appState);
+};
+
+const loadAppState = () => {
+    const savedState = appStateStorage.load();
+    if (savedState.currentFileIndex !== undefined) {
+        // 安全检查：确保文件索引在有效范围内
+        if (
+            savedState.currentFileIndex >= 0 &&
+            savedState.currentFileIndex < files.value.length
+        ) {
+            currentFileIndex.value = savedState.currentFileIndex;
+        }
+    }
+    if (savedState.isPreviewMode !== undefined) {
+        isPreviewMode.value = savedState.isPreviewMode;
+    }
+    if (savedState.sidebarVisible !== undefined) {
+        sidebarVisible.value = savedState.sidebarVisible;
+    }
+    if (savedState.editMode !== undefined) {
+        editMode.value = savedState.editMode;
+    }
+};
+
+// 监听状态变化并自动保存
+watch(
+    [currentFileIndex, isPreviewMode, sidebarVisible, editMode],
+    () => {
+        saveAppState();
+    },
+    { deep: true },
+);
+
 // 方法
 const toggleSidebar = () => {
     sidebarVisible.value = !sidebarVisible.value;
@@ -157,7 +206,7 @@ const togglePreview = () => {
 
 const toggleTheme = () => {
     isDarkTheme.value = !isDarkTheme.value;
-    localStorage.setItem("markit-theme", isDarkTheme.value ? "dark" : "light");
+    themeStorage.save(isDarkTheme.value);
 };
 
 const changePreviewStyle = (styleId: string) => {
@@ -167,7 +216,7 @@ const changePreviewStyle = (styleId: string) => {
     });
 
     // 保存到本地存储
-    localStorage.setItem("markit-preview-style", styleId);
+    previewStyleStorage.save(styleId);
 };
 
 const createNewFile = () => {
@@ -250,7 +299,7 @@ const updateContent = (content: string) => {
 const saveCurrentFile = () => {
     if (currentFile.value) {
         currentFile.value.lastModified = new Date();
-        localStorage.setItem("markit-files", JSON.stringify(files.value));
+        fileStorage.save(files.value);
     }
 };
 
@@ -324,14 +373,11 @@ const updateGithubRepo = (repo: string) => {
 };
 
 const saveSettings = () => {
-    localStorage.setItem(
-        "markit-settings",
-        JSON.stringify({
-            theme: selectedTheme.value,
-            githubToken: githubToken.value,
-            githubRepo: githubRepo.value,
-        }),
-    );
+    settingsStorage.save({
+        theme: selectedTheme.value,
+        githubToken: githubToken.value,
+        githubRepo: githubRepo.value,
+    });
     closeSettings();
 };
 
@@ -507,7 +553,7 @@ const setupShortcuts = () => {
                     previewStyleManager.setStyle(nextStyle.id);
 
                     // 保存到本地存储
-                    localStorage.setItem("markit-preview-style", nextStyle.id);
+                    previewStyleStorage.save(nextStyle.id);
 
                     // 更新Toolbar组件的状态
                     // 这里需要通过事件通知Toolbar组件更新
@@ -536,35 +582,38 @@ const setEditMode = () => {
 // 生命周期
 onMounted(() => {
     setEditMode();
+
+    // 加载保存的文件
+    const savedFiles = fileStorage.load();
+    if (savedFiles.length > 0) {
+        files.value = savedFiles;
+    }
+
+    // 加载应用状态（必须在加载文件之后）
+    loadAppState();
+
+    // 如果没有缓存状态，使用默认值
     if (!editMode.value) {
         togglePreview();
     }
-    // 加载保存的文件
-    const savedFiles = localStorage.getItem("markit-files");
-    if (savedFiles) {
-        const parsedFiles = JSON.parse(savedFiles);
-        // 为旧版本的文件添加GitHub状态字段
-        files.value = parsedFiles.map((file: FileItem) => ({
-            ...file,
-            isPushedToGitHub: file.isPushedToGitHub ?? false,
-        }));
-    }
 
     // 加载设置
-    const savedSettings = localStorage.getItem("markit-settings");
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        selectedTheme.value = settings.theme || "github";
-        githubToken.value = settings.githubToken || "";
-        githubRepo.value = settings.githubRepo || "";
+    const savedSettings = settingsStorage.load();
+    if (savedSettings.theme) {
+        selectedTheme.value = savedSettings.theme;
+    }
+    if (savedSettings.githubToken) {
+        githubToken.value = savedSettings.githubToken;
+    }
+    if (savedSettings.githubRepo) {
+        githubRepo.value = savedSettings.githubRepo;
     }
 
     // 加载主题
-    const savedTheme = localStorage.getItem("markit-theme");
-    isDarkTheme.value = savedTheme === "dark";
+    isDarkTheme.value = themeStorage.load();
 
     // 加载预览样式
-    const savedPreviewStyle = localStorage.getItem("markit-preview-style");
+    const savedPreviewStyle = previewStyleStorage.load();
     const previewStyleDefault = location.search.includes("previewstyle=minimal")
         ? "minimal"
         : "github";
