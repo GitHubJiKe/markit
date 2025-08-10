@@ -12,17 +12,17 @@
         <div class="toolbar-actions" v-if="viewMode === 'edit'">
             <button
                 @click="$emit('togglePreview')"
-                :class="{ active: viewMode === 'preview' }"
+                :class="{ active: viewMode !== 'edit' }"
                 :title="shortcutHints.togglePreview"
             >
-                {{ viewMode === "preview" ? "编辑" : "预览" }}
+                {{ viewMode !== "edit" ? "编辑" : "预览" }}
             </button>
             <button
                 @click="$emit('exportImage')"
-                :disabled="viewMode !== 'preview'"
-                :class="{ disabled: viewMode !== 'preview' }"
+                :disabled="viewMode === 'edit'"
+                :class="{ disabled: viewMode === 'edit' }"
                 :title="
-                    viewMode === 'preview'
+                    viewMode !== 'edit'
                         ? shortcutHints.exportImagePreview
                         : shortcutHints.exportImageEdit
                 "
