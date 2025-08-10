@@ -32,8 +32,8 @@
 
 -   `Cmd/Ctrl + Shift + L` - 切换预览风格
 -   `Cmd/Ctrl + Shift + Option + T` - 滚动到顶部
--   `Cmd/Ctrl + Option + Ctrl + P` - 推送到 GitHub
--   `Cmd/Ctrl + Option + O` - 从 GitHub 拉取
+-   `Cmd/Ctrl + Shift + G` - 推送到 GitHub
+-   `Cmd/Ctrl + Shift + O` - 从 GitHub 拉取
 
 ## 🚀 功能详解
 

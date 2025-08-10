@@ -414,6 +414,11 @@ const pushToGitHub = async () => {
     }
 
     try {
+        // 设置推送状态，禁用 pull 快捷键
+        if (shortcutManager) {
+            shortcutManager.setPushInProgress(true);
+        }
+
         // 解析仓库地址
         const repoMatch = githubRepo.value.match(
             /github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/,
@@ -461,12 +466,22 @@ const pushToGitHub = async () => {
     } catch (error) {
         console.error("推送到GitHub失败:", error);
         alert("推送失败，请检查网络连接和配置");
+    } finally {
+        // 恢复 pull 快捷键
+        if (shortcutManager) {
+            shortcutManager.setPushInProgress(false);
+        }
     }
 };
 
 const pullFromGitHub = async () => {
     if (!githubToken.value || !githubRepo.value) {
         alert("请先在设置中配置GitHub Token和仓库地址");
+        return;
+    }
+
+    // 添加确认对话框，防止误操作
+    if (!confirm("确定要从GitHub拉取最新文件吗？这将覆盖本地文件。")) {
         return;
     }
 
@@ -532,7 +547,6 @@ const pullFromGitHub = async () => {
 };
 
 const exportPicture = () => {
-    console.log(22222);
     if (viewMode.value === "preview") {
         exportToImage();
     } else {

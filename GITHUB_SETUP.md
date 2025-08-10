@@ -68,6 +68,12 @@
 3. **网络连接**：需要稳定的网络连接来访问 GitHub API
 4. **API 限制**：GitHub API 有速率限制，避免频繁操作
 5. **文件冲突**：Push 前建议先 Pull 最新内容
+6. **快捷键安全**：Push 操作期间会自动禁用 Pull 快捷键，防止误操作
+
+## ⌨️ 快捷键
+
+-   **Push 到 GitHub**: `Cmd/Ctrl + Shift + G`
+-   **Pull 从 GitHub**: `Cmd/Ctrl + Shift + O`
 
 ## 🐛 常见问题
 

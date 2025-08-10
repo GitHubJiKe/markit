@@ -29,8 +29,8 @@ export const SHORTCUT_KEYS = {
     OPEN_SETTINGS: "cmd+shift+c,ctrl+shift+c",
     TOGGLE_THEME: "cmd+shift+d,ctrl+shift+d",
     CLOSE_MODAL: "esc",
-    PUSH_TO_GITHUB: "cmd+option+ctrl+p,ctrl+alt+ctrl+p",
-    PULL_FROM_GITHUB: "cmd+option+o,ctrl+alt+o",
+    PUSH_TO_GITHUB: "cmd+shift+g,ctrl+shift+g",
+    PULL_FROM_GITHUB: "cmd+shift+o,ctrl+shift+o",
     CHANGE_PREVIEW_STYLE: "cmd+shift+l,ctrl+shift+l",
     SCROLL_TO_TOP: "cmd+shift+option+t,ctrl+shift+option+t",
     EXPORT_PICTURE: "cmd+shift+i,ctrl+shift+i",
@@ -58,9 +58,17 @@ export const SHORTCUT_DESCRIPTIONS = {
 export class ShortcutManager {
     private actions: ShortcutActions;
     private boundKeys: string[] = [];
+    private isPushInProgress: boolean = false;
 
     constructor(actions: ShortcutActions) {
         this.actions = actions;
+    }
+
+    /**
+     * 设置推送状态
+     */
+    setPushInProgress(inProgress: boolean): void {
+        this.isPushInProgress = inProgress;
     }
 
     /**
@@ -83,7 +91,6 @@ export class ShortcutManager {
             SHORTCUT_KEYS.PREV_FILE,
             this.actions.switchToPrevFile,
         );
-        console.log(111111, this.actions.exportPicture);
         this.bindShortcut(
             SHORTCUT_KEYS.EXPORT_PICTURE,
             this.actions.exportPicture,
@@ -115,14 +122,21 @@ export class ShortcutManager {
             SHORTCUT_KEYS.PUSH_TO_GITHUB,
             this.actions.pushToGitHub,
         );
-        this.bindShortcut(
-            SHORTCUT_KEYS.PULL_FROM_GITHUB,
-            this.actions.pullFromGitHub,
-        );
+
+        // 绑定 pull 快捷键，但添加上下文检查
+        this.bindShortcut(SHORTCUT_KEYS.PULL_FROM_GITHUB, () => {
+            // 如果正在推送，则阻止 pull 操作
+            if (this.isPushInProgress) {
+                console.log("正在推送中，阻止 pull 操作");
+                return;
+            }
+            this.actions.pullFromGitHub();
+        });
+
         this.bindShortcut(
             SHORTCUT_KEYS.CHANGE_PREVIEW_STYLE,
             this.actions.changePreviewStyle,
-        ); // 添加这个绑定
+        );
     }
 
     /**

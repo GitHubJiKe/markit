@@ -127,7 +127,6 @@ const renderedMarkdown = computed(() => {
     html = html.replace(
         /\$\$([^\$\n]+?)\$\$/g,
         (match: string, formula: string) => {
-            console.log(333, formula);
             try {
                 const katexHtml = katex.renderToString(formula, {
                     throwOnError: false,
@@ -146,7 +145,6 @@ const renderedMarkdown = computed(() => {
     html = html.replace(
         /\\\[([^\\\n]+?)\\\]/g,
         (match: string, formula: string) => {
-            console.log(444, formula);
             try {
                 const katexHtml = katex.renderToString(formula, {
                     throwOnError: false,
