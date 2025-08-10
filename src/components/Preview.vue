@@ -211,7 +211,9 @@ const renderedMarkdown = computed(() => {
     return (
         `<div style="flex:1">${tempDiv.innerHTML}</div>` +
         `<div class="brand-footer">
-            <img src="/favicon.png" alt="Markit" class="brand-icon" />
+            <img src="/favicon_${
+                isDarkTheme.value ? "white" : "black"
+            }.png" alt="Markit" class="brand-icon" />
             <span class="brand-name">Markit</span>
         </div>`
     );
