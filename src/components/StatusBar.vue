@@ -16,9 +16,17 @@ const props = defineProps<{
 
 const statusText = computed(() => {
     const content = props.content;
-    const words = content.trim().split(/\s+/).length;
-    const chars = content.length;
-    return `${words}字，${chars}字符`;
+    // 计算中文字符数（包括中文、日文、韩文等CJK字符）
+    const chineseChars = (
+        content.match(
+            /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g,
+        ) || []
+    ).length;
+    // 计算英文单词数
+    const englishWords = (content.match(/[a-zA-Z]+/g) || []).length;
+    const totalChars = content.length;
+    const totalWords = chineseChars + englishWords;
+    return `${totalWords}字，${totalChars}字符`;
 });
 </script>
 
