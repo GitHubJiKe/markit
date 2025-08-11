@@ -417,4 +417,58 @@ watch(() => props.content, watchContent, { immediate: true });
     background: #404040;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
+
+@media (max-width: 768px) {
+    .preview-content {
+        padding: 16px;
+        font-size: 16px; /* 防止iOS缩放 */
+        line-height: 1.6;
+    }
+
+    .scroll-to-top-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .preview-container.mobile {
+        padding: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-content {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .scroll-to-top-btn {
+        bottom: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .preview-container {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .scroll-to-top-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* 横屏模式适配 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .scroll-to-top-btn {
+        bottom: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+}
 </style>
