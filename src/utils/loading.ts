@@ -11,6 +11,9 @@ export function showLoading(
     message: string = "加载中...",
     type: "indeterminate" | "determinate" = "indeterminate",
 ) {
+    if (isLoading.value) {
+        return;
+    }
     isLoading.value = true;
     loadingMessage.value = message;
     loadingType.value = type;
